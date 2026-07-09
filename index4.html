@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Program - index4</title>
+    <style>
+        /* RESET CHUẨN THEO STYLE CỦA BẠN */
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* COPY CÔNG THỨC NỀN TỪ STYLE3.CSS CỦA BẠN */
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: url('static/mainbackground3.png') no-repeat center center;
+            background-size: cover;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            padding-top: 70px;
+            gap: 40px;
+        }
+
+        /* BOX TRONG SUỐT (GLASSMORPHISM) */
+        .glass-box {
+            background: rgba(22, 56, 84, 0.85); 
+            border: none; 
+            position: relative;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .corner {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            border: 4px solid #4ce9ff;
+            z-index: 99;
+        }
+        .t-l { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+        .t-r { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+        .b-l { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+        .b-r { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+        .header-title {
+            background: #2a6f97;
+            padding: 10px 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+        }
+
+        /* --- CHỈNH BOX BÁC SĨ BÉ HƠN --- */
+        .sidebar {
+            width: 350px;
+            height: 300px;
+            padding-bottom: 20px;
+        }
+
+        /* --- CHỈNH BOX BÀI TẬP TO/DÀI HƠN --- */
+        .main-content {
+            width: 650px;
+            height: 520px;
+        }
+
+        .doctor-info {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 90px;
+            height: 100px;
+            border: 1px solid white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .details { font-size: 0.85rem; line-height: 1.5; }
+
+        .calendar-icon {
+            display: block;
+            margin: 10px auto 0;
+            width: 100px;
+            filter: brightness(0) invert(1);
+        }
+
+        .exercise-list {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .exercise-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        .exercise-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .exercise-list::-webkit-scrollbar-thumb {
+            background: white;
+            border-radius: 10px;
+        }
+
+        .exercise-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid white;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-start {
+            background: #4ce9ff;
+            border: none;
+            padding: 6px 25px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #1a3a5f;
+            cursor: pointer;
+            text-transform: lowercase;
+        }
+
+        .btn-start:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+         
+        .btn-tutorial {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #4ce9ff;
+            background: transparent;
+            color: #4ce9ff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+        
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-tutorial:hover {
+            background: rgba(76, 233, 255, 0.2);
+            box-shadow: 0 0 15px #4ce9ff;
+        }
+        
+        .btn-finished {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: default;
+            display: none;
+        }
+        
+        /* THÊM STYLE CHO EMAIL DISPLAY */
+        .email-display {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: #4ce9ff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 9999;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div id="videoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;">
+      <div style="position: relative; width: 80%; max-width: 800px; background: #111; border-radius: 15px; padding: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.5);">
+        <button onclick="closeVideoModal()" style="position: absolute; top: -40px; right: 0; background: #ff4b2b; color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;">Đóng lại ✖</button>
+        <video id="modalVideoPlayer" controls style="width: 100%; border-radius: 10px; background: black;"></video>
+      </div>
+    </div>
+
+    <div class="bg-image"></div>
+    <button onclick="backToDetail()" 
+        style="margin-bottom:0px; padding:10px 20px; border-radius:10px; cursor:pointer;">
+        ← Back
+    </button>
+    
+    <div class="container">
+        <div class="glass-box sidebar">
+            <span class="corner t-l"></span>
+            <span class="corner t-r"></span>
+            <span class="corner b-l"></span>
+            <span class="corner b-r"></span>
+
+            <div class="header-title">
+                <span>BÁC SĨ TIẾP NHẬN</span>
+                <span>👤</span>
+            </div>
+            <div class="doctor-info">
+                <div class="avatar">
+                    <img src="static/doctoravatar.jpg" style="width:100%; height:100%; object-fit:cover; opacity:0.6;">
+                </div>
+                <div class="details">
+                    <strong>TS. BS Nguyễn Văn A</strong><br>
+                    Bác sĩ chuyên khoa<br>
+                    Phục hồi chức năng<br>
+                    ID: 12345<br>
+                    Email: doctor@smartarm.vn<br>
+                    Phone: 090xxx
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-box main-content">
+            <span class="corner t-l"></span>
+            <span class="corner t-r"></span>
+            <span class="corner b-l"></span>
+            <span class="corner b-r"></span>
+
+            <div class="header-title">
+                <span>CHƯƠNG TRÌNH PHỤC HỒI</span>
+            </div>
+            <div class="exercise-list" id="exercise-list-container">
+                <div style="text-align:center; padding:20px;">Đang tải bài tập...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- THÊM EMAIL DISPLAY ĐỂ DEBUG -->
+    <div class="email-display" id="email-display">Đang kiểm tra...</div>
+
+    <script>
+    // ========== THÊM: KIỂM TRA EMAIL KHI TRANG LOAD ==========
+    document.addEventListener('DOMContentLoaded', () => {
+        const email = localStorage.getItem('patient_email');
+        
+        const emailDisplay = document.getElementById('email-display');
+        
+        console.log("Index4 - Email từ localStorage:", email);
+        
+        if (!email) {
+            emailDisplay.innerHTML = "⚠️ Chưa đăng nhập!";
+            emailDisplay.style.color = "#ff6666";
+            alert("Vui lòng đăng nhập lại!");
+            window.location.href = "/";
+            return;
+        } else {
+            emailDisplay.innerHTML = `📧 ${email}`;
+            emailDisplay.style.color = "#4ce9ff";
+        }
+        
+        // Gọi loadExercises
+        loadExercises();
+    });
+
+    function backToDetail() {
+        window.location.href = "http://127.0.0.1:5000/";
+    }
+    
+    // ========== SỬA HÀM viewReport ==========
+    function viewReport(exId, exType, targetSets, targetRepsPerSet, targetAngle) {
+        const email = localStorage.getItem('patient_email');
+        console.log("viewReport - Email:", email);
+        
+        if (!email) {
+            alert("Không tìm thấy email! Vui lòng đăng nhập lại.");
+            window.location.href = "/";
+            return;
+        }
+        
+        let mappedType = '';
+        if (exType === 'hand') {
+            mappedType = 'hand';
+        } else if (exType === 'shoulder') {
+            mappedType = 'shoulder';
+        } else {
+            mappedType = 'elbow';
+        }
+        
+        // Truyền đủ target_sets và target_reps_per_set
+        let url = `/index5?ex_id=${exId}&ex_type=${mappedType}&target_sets=${targetSets}&target_reps_per_set=${targetRepsPerSet}&target_angle=${encodeURIComponent(targetAngle)}&email=${encodeURIComponent(email)}&source=index4`;
+        if (targetAngle && targetAngle !== '' && targetAngle !== 'undefined') {
+        url += `&target_angle=${targetAngle}`;
+    }
+    
+
+        console.log("Chuyển đến:", url);
+        window.location.href = url;
+    }
+
+    // ========== GIỮ NGUYÊN CODE CŨ, CHỈ SỬA HÀM loadExercises ==========
+    async function loadExercises() {
+        const container = document.getElementById('exercise-list-container');
+        if (!container) return;
+        
+        const email = localStorage.getItem('patient_email');
+        console.log("loadExercises - Email:", email);
+        
+        if (!email) {
+            container.innerHTML = '<div style="text-align:center; padding:20px;">Vui lòng đăng nhập!</div>';
+            return;
+        }
+        
+        try {
+            const response = await fetch('/get-exercises', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            });
+            const result = await response.json();
+            
+            if (result.status === 'success' && result.exercises.length > 0) {
+                let html = '';
+                
+                result.exercises.forEach((ex, idx) => {
+                    const currentExId = idx + 1;
+                    let isFinished = localStorage.getItem(`finished_ex_${currentExId}`) === 'true';
+                    
+                    if (ex.is_completed === true) {
+                        isFinished = true;
+                        localStorage.setItem(`finished_ex_${currentExId}`, 'true');
+                    }
+                    
+                    const tutorialAction = ex.tutorial_video ? 
+                        `openVideoModal('${ex.tutorial_video}', '${ex.description.replace(/'/g, "\\'")}')` : 
+                        `alert('Bác sĩ chưa thực hiện ghi hình video hướng dẫn riêng cho bài tập này: ${ex.description.replace(/'/g, "\\'")}')`;
+                    html += `<div class="exercise-item">
+                        <span>Bài tập ${idx + 1}: ${ex.description}</span>
+                        <div class="btn-group">
+                            <button class="btn-tutorial" onclick="${tutorialAction}" title="Xem video bác sĩ hướng dẫn">💡</button>
+            
+                        ${!isFinished ? `
+                            <button class="btn-start" 
+                                    data-type="${ex.type}" 
+                                    data-sets="${ex.sets}" 
+                                    data-reps="${ex.reps}" 
+                                    data-ex-id="${idx + 1}" 
+                                    data-target-angle="${ex.targetAngle || ''}">
+                                Bắt đầu
+                            </button>
+                        ` : `
+                            <button class="btn-start" 
+                                    style="background-color: #28a745; color: white;" 
+                                    data-type="${ex.type}" 
+                                    data-sets="${ex.sets}" 
+                                    data-reps="${ex.reps}" 
+                                    data-ex-id="${idx + 1}" 
+                                    data-target-angle="${ex.targetAngle || ''}">
+                                ✓ Tập Lại
+                            </button>
+
+                            <button class="btn-chart" 
+                                    style="background-color: #4ce9ff; color: #1a3a5f; border: none; padding: 6px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;" 
+                                    onclick="viewReport('${idx + 1}', '${ex.type}', ${ex.sets}, ${ex.reps}, '${ex.targetAngle || ''}')">
+                                Xem Đồ Thị
+                            </button>
+                        `}
+                        </div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+                
+                // Gắn lại sự kiện cho nút Bắt đầu mới tạo
+                document.querySelectorAll('.btn-start').forEach(btn => {
+                    btn.onclick = () => {
+                        const type = btn.getAttribute('data-type');
+                        const sets = btn.getAttribute('data-sets');
+                        const reps = btn.getAttribute('data-reps');
+                        const exId = btn.getAttribute('data-ex-id');
+                        const targetAngle = btn.getAttribute('data-target-angle');
+                        const email = localStorage.getItem('patient_email');
+                        
+                        let url = `/start-exercise/${type}?ex_id=${exId}&sets=${sets}&reps=${reps}&email=${encodeURIComponent(email)}`;
+                        if (targetAngle && targetAngle !== '') {
+                            url += `&target_angle=${targetAngle}`;
+                        }
+                        console.log("Bắt đầu tập - URL:", url);
+                        window.location.href = url;
+                    };
+                });
+            } else {
+                container.innerHTML = '<div style="text-align:center; padding:20px;">Chưa có bài tập nào!</div>';
+            }
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = '<div style="text-align:center; padding:20px;">Lỗi tải dữ liệu!</div>';
+        }
+    }
+
+    async function openVideoModal(videoUrl, description) {
+        try {
+            // Gửi yêu cầu HEAD nhanh để kiểm tra xem file video thực tế có tồn tại trên server không
+            const checkFile = await fetch(videoUrl, { method: 'HEAD' });
+            
+            // Nếu server trả về mã lỗi 404 (Không tìm thấy file) hoặc lỗi khác
+            if (!checkFile.ok) {
+                alert(`Bác sĩ chưa thực hiện ghi hình video hướng dẫn riêng cho bài tập này: ${description}`);
+                return; // Chặn lại, không mở hộp thoại đen xì nữa
+            }
+            
+            // Nếu file tồn tại hợp lệ, tiến hành kích hoạt trình phát video như bình thường
+            const modal = document.getElementById("videoModal");
+            const player = document.getElementById("modalVideoPlayer");
+        
+            // Thêm timestamp để phá cache trình duyệt, ép cập nhật video mới
+            player.src = videoUrl + "?t=" + new Date().getTime();
+            modal.style.display = "flex";
+            player.play().catch(e => console.log("Chờ người dùng tương tác để phát video:", e));
+            
+        } catch (error) {
+            console.error("Lỗi kiểm tra file video:", error);
+            // Phương án dự phòng nếu server lỗi kết nối ngầm
+            alert(`Bác sĩ chưa thực hiện ghi hình video hướng dẫn riêng cho bài tập này: ${description}`);
+        }
+    }
+
+    // Hàm đóng cửa sổ video
+    function closeVideoModal() {
+        const modal = document.getElementById("videoModal");
+        const player = document.getElementById("modalVideoPlayer");
+    
+        player.pause();
+        player.src = "";
+        modal.style.display = "none";
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết Quả Luyện Tập - Hệ thống SmartArm</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0b192c;
+        }
+        .bg-image {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: url('static/mainbackground3.png') no-repeat center center;
+            background-size: cover;
+        }
+        .btn-back {
+            background: #4ce9ff; border: none; padding: 12px 45px; border-radius: 25px;
+            font-weight: bold; color: #1a3a5f; cursor: pointer; display: block; 
+            margin: 25px auto 10px auto; transition: all 0.3s ease; text-transform: uppercase;
+            font-size: 0.95rem; letter-spacing: 1px; box-shadow: 0 0 10px rgba(76, 233, 255, 0.3);
+        }
+        .btn-back:hover { 
+            background: #ffffff; color: #0b192c; transform: scale(1.05); 
+            box-shadow: 0 0 20px #4ce9ff, 0 0 30px rgba(76, 233, 255, 0.5);
+        }
+        .container {
+            display: flex; justify-content: center; align-items: flex-start;
+            min-height: 100vh; padding: 40px 20px; overflow-y: auto;
+        }
+        .glass-box {
+            background: rgba(22, 56, 84, 0.85); width: 100%; max-width: 900px;
+            padding: 30px; border-radius: 15px; position: relative; color: white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); display: flex; flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .corner { position: absolute; width: 25px; height: 25px; border: 4px solid #4ce9ff; z-index: 99; }
+        .t-l { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+        .t-r { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+        .b-l { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+        .b-r { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+        .header-title {
+            background: #2a6f97; padding: 12px 20px; font-weight: bold; font-size: 1.3rem;
+            text-align: center; border-radius: 5px; margin-bottom: 25px; color: #4ce9ff; text-transform: uppercase;
+        }
+        .target-info { font-size: 0.85rem; display: block; margin-top: 8px; color: #ffd700; font-weight: normal; }
+        .stats-summary {
+            background: rgba(0, 0, 0, 0.4); border-radius: 10px; padding: 15px; margin-bottom: 20px;
+            display: flex; justify-content: space-around; text-align: center;
+        }
+        .stat-card { flex: 1; }
+        .stat-value { font-size: 2rem; font-weight: bold; color: #4ce9ff; }
+        .stat-label { font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); margin-top: 5px; }
+        .section-subtitle {
+            font-size: 1.1rem; color: #fff; margin: 10px 0 15px 5px;
+            border-left: 4px solid #4ce9ff; padding-left: 10px; font-weight: 600;
+        }
+        .chart-wrapper {
+            background: rgba(255, 255, 255, 0.04); padding: 20px; border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 30px; height: 380px; 
+        }
+        .scrollable-chart-container {
+            width: 100%; overflow-x: auto; background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 30px; padding: 20px;
+        }
+        .inner-chart-wrapper { height: 340px; min-width: 800px; }
+        .scrollable-chart-container::-webkit-scrollbar { height: 8px; }
+        .scrollable-chart-container::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+        .scrollable-chart-container::-webkit-scrollbar-thumb { background: #4ce9ff; border-radius: 10px; box-shadow: 0 0 10px #4ce9ff; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-image"></div>
+    
+    <div id="flask-data-bridge"
+     data-target-angle="{% if target_angle is not none %}{{ target_angle }}{% else %}{% endif %}"
+     data-labels='{{ labels | safe if labels else "[]" }}'
+     data-angles='{{ angles | safe if angles else "[]" }}'
+     data-extype='{{ ex_type if ex_type else "shoulder" }}'
+     data-target-sets='{{ target_sets if target_sets else "3" }}'
+     data-target-reps-per-set='{{ target_reps_per_set if target_reps_per_set else "10" }}'
+     data-target-total-reps='{{ target_total_reps if target_total_reps else "30" }}'
+     data-history-json='{{ history_json | safe if history_json else "{}" }}'>
+</div>
+
+    <div class="container">
+        <div class="glass-box">
+            <span class="corner t-l"></span>
+            <span class="corner t-r"></span>
+            <span class="corner b-l"></span>
+            <span class="corner b-r"></span>
+
+            <div class="header-title">
+                PHÂN TÍCH KẾT QUẢ VÀ TIẾN TRÌNH ĐIỀU TRỊ
+                <span class="target-info" id="target-info-display"></span>
+            </div>
+            
+            <div class="stats-summary" id="stats-summary">
+                </div>
+            
+            <div class="section-subtitle" id="line-chart-title">1. Quỹ đạo sinh cơ học theo thời gian</div>
+            <div class="chart-wrapper">
+                <canvas id="reportChart"></canvas>
+            </div>
+
+            <div class="section-subtitle">2. Tỷ lệ hoàn thành bài tập so với chỉ định bác sĩ (Bấm vào cột để xem chi tiết)</div>
+            <div class="scrollable-chart-container">
+                <div class="inner-chart-wrapper" id="barWrapper">
+                    <canvas id="complianceChart"></canvas>
+                </div>
+            </div>
+
+
+            <div class="section-subtitle">3. Nhật ký ghi hình buổi tập </div>
+            
+            <div style="background: rgba(255, 255, 255, 0.04); padding: 20px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08); display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                
+                <div style="width: 100%; max-width: 500px; position: relative;">
+                    <video id="patientExerciseVideo" controls style="width: 100%; height: 280px; border-radius: 8px; border: 2px solid rgba(76, 233, 255, 0.3); background: #000;">
+                        <source id="videoSource" src="" type="video/mp4">
+                        Trình duyệt không hỗ trợ xem video.
+                    </video>
+                </div>
+
+                <div style="width: 100%; overflow-x: auto; padding: 10px 0; display: flex; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1);" id="timelineScrollContainer">
+                    </div>
+                
+                <div id="videoStatusMessage" style="font-size: 0.85rem; color: #4ce9ff; font-weight: bold; text-align: center;"></div>
+            </div>
+
+            <button class="btn-back" onclick="goBackToMenu()">QUAY LẠI DANH SÁCH</button>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Lấy dữ liệu an toàn từ HTML Bridge
+    const bridge = document.getElementById('flask-data-bridge');
+    if (!bridge) {
+        console.error("Không tìm thấy cổng nối dữ liệu HTML Bridge!");
+        return;
+    }
+
+    const targetSets = parseInt(bridge.getAttribute('data-target-sets')) || 3;
+    const targetRepsPerSet = parseInt(bridge.getAttribute('data-target-reps-per-set')) || 10;
+    const targetTotalReps = parseInt(bridge.getAttribute('data-target-total-reps')) || 30;
+    const serverExType = bridge.getAttribute('data-extype') || 'shoulder';
+    const isHandExercise = (serverExType === 'hand');
+    
+    const rawTargetAngle = bridge.getAttribute('data-target-angle');
+    let targetAngleLine;
+    if (rawTargetAngle && rawTargetAngle.trim() !== '' && rawTargetAngle !== 'None' && !isNaN(rawTargetAngle)) {
+    targetAngleLine = parseInt(rawTargetAngle);
+    } else {
+        // Nếu Flask hoàn toàn không trả về gì, mới dùng các mốc mặc định theo bài tập:
+        if (serverExType === 'hand') {
+            targetAngleLine = 90;
+        } else if (serverExType === 'elbow') {
+            targetAngleLine = 50;
+        } else if (serverExType === 'shoulder') {
+            targetAngleLine = 90; // ✅ Sửa mốc mặc định của bài Vai về 90 thay vì 140
+        } else {
+            targetAngleLine = 90; // Mốc an toàn mặc định
+        }
+    }
+    // 2. Đọc dữ liệu lịch sử an toàn
+    let historicalData = {};
+    const rawHistory = bridge.getAttribute('data-history-json');
+    if (rawHistory) {
+        try {
+            historicalData = JSON.parse(rawHistory);
+        } catch (e) {
+            console.error("Lỗi parse dữ liệu JSON lịch sử:", e);
+        }
+    }
+
+    // Sắp xếp ngày tháng tập
+    const dateLabels = Object.keys(historicalData).sort((a, b) => {
+        const [dayA, monthA] = a.split('/').map(Number);
+        const [dayB, monthB] = b.split('/').map(Number);
+        return new Date(2026, monthA - 1, dayA) - new Date(2026, monthB - 1, dayB);
+    });
+
+    const statsSummary = document.getElementById('stats-summary');
+    if (dateLabels.length === 0) {
+        if (statsSummary) statsSummary.innerHTML = '<div style="text-align:center;padding:20px;width:100%;">Chưa có dữ liệu lịch sử của bài tập này!</div>';
+        return;
+    }
+
+    // Lấy ngày cuối cùng làm mặc định
+    const latestDate = dateLabels[dateLabels.length - 1];
+    const latestData = historicalData[latestDate];
+    
+    // Hàm cập nhật thẻ Thống kê
+    function updateStatsCards(actual, total) {
+        if (!statsSummary) return;
+        const compliancePercent = Math.round((actual / total) * 100) || 0;
+        const missing = total - actual;
+        statsSummary.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${actual}/${total}</div>
+                <div class="stat-label">Tổng số Reps thực hiện</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${compliancePercent}%</div>
+                <div class="stat-label">Tỷ lệ hoàn thành</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${missing > 0 ? missing : 0}</div>
+                <div class="stat-label">Còn thiếu</div>
+            </div>
+        `;
+    }
+
+    const initialTarget = latestData.target_total_reps || targetTotalReps;
+    const initialActual = latestData.actual_reps || 0;
+    updateStatsCards(initialActual, initialTarget);
+
+    const barWrapper = document.getElementById('barWrapper');
+    if (dateLabels.length > 4 && barWrapper) {
+        barWrapper.style.minWidth = (dateLabels.length * 160) + 'px';
+    }
+
+    const commonScales = {
+        ticks: { color: 'rgba(255,255,255,0.7)', font: { family: 'Segoe UI' } },
+        grid: { color: 'rgba(255,255,255,0.08)' }
+    };
+
+    // ===================================
+    // BIỂU ĐỒ 1: LINE CHART
+    // ===================================
+    const ctx1 = document.getElementById('reportChart').getContext('2d');
+    const subtitleElement = document.getElementById('line-chart-title');
+
+    const reportChart = new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: latestData.labels || [],
+            datasets: [
+                {
+                    label: isHandExercise ? 'Mức Co Duỗi Mục Tiêu (%)' : 'Biên Độ Chỉ Định (°)',
+                    data: new Array((latestData.labels || []).length).fill(latestData.target_angle || targetAngleLine),
+                    borderColor: 'rgba(255, 215, 0, 0.5)',
+                    borderDash: [6, 6],
+                    fill: false,
+                    tension: 0.1,
+                    pointRadius: 0
+                },
+                {
+                    label: isHandExercise ? 'Mức Co Duỗi Thực Tế (%)' : 'Biên Độ Thực Tế (°)',
+                    data: latestData.angles || [],
+                    borderColor: '#4ce9ff',
+                    backgroundColor: 'rgba(76, 233, 255, 0.12)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#4ce9ff',
+                    pointRadius: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    ...commonScales,
+                    min: 0, 
+                    max: isHandExercise ? 100 : 180, 
+                    title: { 
+                        display: true, 
+                        text: isHandExercise ? 'Mức Độ Co Duỗi Bàn Tay (%)' : 'Biên Độ Góc Khớp (°)', 
+                        color: '#fff', 
+                        font: { weight: 'bold' } 
+                    }
+                },
+                x: {
+                    ...commonScales,
+                    title: { display: true, text: 'Thời Gian Thực Hiện (Giây)', color: '#fff', font: { weight: 'bold' } }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#fff', font: { size: 12, weight: '500' } } },
+                tooltip: { backgroundColor: 'rgba(15, 42, 67, 0.9)', titleColor: '#4ce9ff', bodyColor: '#fff' }
+            }
+        }
+    });
+
+    function updateChartStyle(chart, date, isHand, angleValue) {
+        if (!subtitleElement) return;
+        const angleText = angleValue ? ` — Góc mục tiêu: ${angleValue}°` : '';
+        if (isHand) {
+            subtitleElement.innerText = `1. Quỹ đạo sinh cơ học mức độ co duỗi bàn tay ngày ${date}`;
+            chart.options.scales.y.max = 100;
+            chart.options.scales.y.title.text = 'Mức Độ Co Duỗi Bàn Tay (%)';
+        } else {
+            subtitleElement.innerText = `1. Quỹ đạo sinh cơ học góc khớp ngày ${date}`;
+            chart.options.scales.y.max = 180;
+            chart.options.scales.y.title.text = 'Biên Độ Góc Khớp (°)';
+        }
+        chart.update();
+    }
+    
+    updateChartStyle(reportChart, latestDate, isHandExercise, latestData.target_angle || targetAngleLine);
+
+    // ===================================
+    // BIỂU ĐỒ 2: BAR CHART
+    // ===================================
+    const ctx2 = document.getElementById('complianceChart').getContext('2d');
+    
+    const patientCompliances = dateLabels.map(date => {
+        const data = historicalData[date];
+
+        if (data.compliance !== undefined) {
+            return data.compliance;
+        }
+
+        const total = data.target_total_reps || targetTotalReps;
+        const actual = data.actual_reps || 0;
+        return Math.round((actual / total) * 100);
+    });
+    
+    const actualRepsList = dateLabels.map(date => historicalData[date].actual_reps || 0);
+    const targetTotalList = dateLabels.map(date => {
+        const data = historicalData[date];
+        return data.target_total_reps || data.target_total_rep || targetTotalReps;
+    });
+    
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: dateLabels,
+            datasets: [
+                {
+                    label: 'Yêu Cầu Bác Sĩ (100%)',
+                    data: new Array(dateLabels.length).fill(100),
+                    backgroundColor: 'rgba(16, 185, 129, 0.4)',
+                    borderColor: '#10b981',
+                    borderWidth: 1.5,
+                    borderRadius: 4
+                },
+                {
+                    label: 'Tỷ lệ hoàn thành Reps (%)',
+                    data: patientCompliances,
+                    backgroundColor: '#4ce9ff',
+                    borderColor: '#ffffff',
+                    borderWidth: 1.5,
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            onClick: (event, elements) => {
+    if (elements.length > 0) {
+        const activeIndex = elements[0].index;
+        const selectedDate = dateLabels[activeIndex];
+        const selectedData = historicalData[selectedDate];
+        
+        if (selectedData) {
+            reportChart.data.labels = selectedData.labels || [];
+            reportChart.data.datasets[1].data = selectedData.angles || [];
+
+            // ✅ Đọc target_angle của ĐÚNG NGÀY được bấm
+            let angleForThisDay = selectedData.target_angle;
+            
+            // 🌟 SỬA ĐOẠN NÀY ĐỂ BÀI ELBOW VÀ CÁC BÀI KHÁC LUÔN ĐÚNG:
+            // 1. Ưu tiên lấy góc cụ thể được lưu trong ngày đó
+            let dynamicTargetAngle = selectedData.target_angle;
+            
+            // 2. Nếu ngày đó chưa có góc (hoặc bản ghi cũ bị null), tự động tính mốc chuẩn theo loại bài tập hiện tại
+            if (!dynamicTargetAngle || dynamicTargetAngle === 'None') {
+                const bridge = document.getElementById('flask-data-bridge');
+                const rawTargetAngle = bridge ? bridge.getAttribute('data-target-angle') : '';
+                
+                // Nếu Flask có truyền data-target-angle mới thì lấy luôn
+                if (rawTargetAngle && rawTargetAngle !== '' && rawTargetAngle !== 'None' && !isNaN(rawTargetAngle)) {
+                    dynamicTargetAngle = parseInt(rawTargetAngle);
+                } else {
+                    // Phương án dự phòng cuối cùng nếu Flask trống rỗng:
+                    if (serverExType === 'hand') dynamicTargetAngle = 90;
+                    else if (serverExType === 'elbow') dynamicTargetAngle = 50;     // Mặc định chuẩn cho khuỷu tay
+                    else if (serverExType === 'shoulder') dynamicTargetAngle = 90;  // Mặc định chuẩn cho vai
+                    else dynamicTargetAngle = 90;
+                }
+            switchActiveVideo(selectedDate);
+            }
+            
+            // Đổ dữ liệu góc đã tính toán chính xác vào đường mục tiêu
+            reportChart.data.datasets[0].data = new Array((selectedData.labels || []).length).fill(angleForThisDay || dynamicTargetAngle);
+            
+            // Giữ nguyên các hàm cập nhật giao diện bên dưới của em
+            updateChartStyle(reportChart, selectedDate, isHandExercise, angleForThisDay || dynamicTargetAngle);
+            
+            const sTotal = selectedData.target_total_reps || targetTotalReps;
+            const sActual = selectedData.actual_reps || 0;
+            updateStatsCards(sActual, sTotal);
+        }
+    }
+},
+            scales: {
+                y: { ...commonScales, min: 0, max: 110, title: { display: true, text: 'Tỷ Lệ Hoàn Thành (%)', color: '#fff', font: { weight: 'bold' } } },
+                x: { ...commonScales, title: { display: true, text: 'Ngày Tập Luyện', color: '#fff', font: { weight: 'bold' } } }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const datasetLabel = context.dataset.label;
+                            const value = context.raw;
+                            const index = context.dataIndex;
+                            
+                            if (datasetLabel === 'Tỷ lệ hoàn thành Reps (%)') {
+                                const totalReps = targetTotalList[index];
+                                const actualRepsCount = actualRepsList[index];
+                                return `${datasetLabel}: ${value}% (${actualRepsCount}/${totalReps} reps)`;
+                            }
+                            return `${datasetLabel}: ${value}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    // ===================================
+    // BIỂU ĐỒ 3: XỬ LÝ TRỤC NGANG VÀ VIDEO DỰA TRÊN LỊCH SỬ DỮ LIỆU
+    // ===================================
+    const timelineContainer = document.getElementById('timelineScrollContainer');
+    const videoPlayer = document.getElementById('patientExerciseVideo');
+    const videoSource = document.getElementById('videoSource');
+    const videoMessage = document.getElementById('videoStatusMessage');
+
+    // Hàm thay đổi Video và kích hoạt trạng thái nút bấm trên trục ngang
+    function switchActiveVideo(targetDate) {
+        const targetData = historicalData[targetDate];
+        
+        // 1. Cập nhật giao diện nút bấm trên trục ngang để người dùng biết đang chọn ngày nào
+        document.querySelectorAll('.timeline-btn').forEach(btn => {
+            if (btn.getAttribute('data-date') === targetDate) {
+                btn.style.background = '#4ce9ff';
+                btn.style.color = '#1a3a5f';
+                btn.style.boxShadow = '0 0 10px #4ce9ff';
+            } else {
+                btn.style.background = 'rgba(255,255,255,0.1)';
+                btn.style.color = '#fff';
+                btn.style.boxShadow = 'none';
+            }
+        });
+
+        videoPlayer.onstalled = null;
+        videoSource.onerror = null;
+
+        // 2. Kiểm tra dữ liệu video của ngày được chọn và nạp vào trình phát
+        if (targetData && targetData.video) {
+            
+            // Bước A: Gán thông báo tạm thời trong lúc chờ trình duyệt tìm file
+            videoMessage.innerText = `⏳ Đang kiểm tra dữ liệu video ngày ${targetDate}...`;
+            videoPlayer.style.opacity = "0.5";
+            
+            // Bước B: Bẫy lỗi 404 (Không tìm thấy file thực tế dưới ổ đĩa) trực tiếp trên thẻ <source>
+            videoSource.onerror = function() {
+                videoSource.removeAttribute('src'); // Xóa nguồn rác
+                videoPlayer.style.opacity = "0.3";
+                videoMessage.innerText = `❌ Buổi tập ngày ${targetDate} không có file video ghi hình đính kèm (hoặc file đã bị xóa).`;
+            };
+
+            // Bước C: Bẫy lỗi đứng luồng phát nếu file rỗng hoặc không tải được dữ liệu mạng
+            videoPlayer.onstalled = function() {
+                videoMessage.innerText = `❌ Không thể tải video ngày ${targetDate} (File không tồn tại).`;
+            };
+
+            // Tiến hành gán nguồn và ra lệnh nạp file
+            videoSource.src = `/videos/${targetData.video}`;
+            videoPlayer.load();
+
+            // Tạo một bộ thám thính nhỏ: Nếu sau 300ms video nạp thành công (meta data sẵn sàng) thì mới hiện chữ Đang phát
+            setTimeout(() => {
+                if (videoPlayer.networkState !== 3 && videoSource.src !== "") {
+                    videoMessage.innerText = `🎞️ Đang phát dữ liệu video ngày ${targetDate}: ${targetData.video}`;
+                    videoPlayer.style.opacity = "1";
+                }
+            }, 300);
+            
+        } else {
+            // Trường hợp ngày đó trong JSON hoàn toàn không khai báo trường video
+            videoSource.removeAttribute('src');
+            videoPlayer.pause();
+            videoPlayer.style.opacity = "0.3"; 
+            videoMessage.innerText = `⚠️ Buổi tập ngày ${targetDate} không có file video ghi hình đính kèm.`;
+        }
+    }
+
+    // Tự động sinh ra các nút mốc ngày xếp hàng ngang (Trục ngang)
+    if (timelineContainer && dateLabels.length > 0) {
+        timelineContainer.innerHTML = ''; // Reset vùng chứa
+        
+        dateLabels.forEach(date => {
+            const btn = document.createElement('button');
+            btn.className = 'timeline-btn';
+            btn.setAttribute('data-date', date);
+            btn.innerText = `📅 Ngày ${date}`;
+            
+            // Định hình phong cách cơ bản cho nút trên trục ngang
+            btn.style.cssText = `
+                padding: 8px 20px;
+                border: 1px solid rgba(76, 233, 255, 0.4);
+                border-radius: 15px;
+                font-size: 0.85rem;
+                font-weight: bold;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: all 0.2s ease;
+            `;
+            
+            // Sự kiện khi người dùng click trực tiếp vào nút ngày trên trục ngang
+            btn.onclick = () => {
+                switchActiveVideo(date);
+                
+                // Đồng bộ ngược lại biểu đồ số 1 (Line Chart) giống như khi click vào cột
+                const selectedData = historicalData[date];
+                if (selectedData) {
+                    reportChart.data.labels = selectedData.labels || [];
+                    reportChart.data.datasets[1].data = selectedData.angles || [];
+                    
+                    let dynamicTargetAngle = selectedData.target_angle || targetAngleLine;
+                    reportChart.data.datasets[0].data = new Array((selectedData.labels || []).length).fill(dynamicTargetAngle);
+                    
+                    updateChartStyle(reportChart, date, isHandExercise, dynamicTargetAngle);
+                    updateStatsCards(selectedData.actual_reps || 0, selectedData.target_total_reps || targetTotalReps);
+                }
+            };
+            
+            timelineContainer.appendChild(btn);
+        });
+
+        // Kích hoạt video mặc định cho ngày luyện tập mới nhất khi vừa tải xong trang
+        switchActiveVideo(latestDate);
+    }
+});
+
+function goBackToMenu() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const exId = urlParams.get('ex_id');
+    const source = urlParams.get('source');
+    const email = urlParams.get('email');   // ← thêm dòng này
+    if (exId) {
+        localStorage.setItem('finished_ex_' + exId, 'true');
+    }
+    if (source === 'index_ee') {
+        // ← đổi dòng này để kèm email + screen=2
+        const backUrl = '/doctor-page' + (email ? `?screen=2&email=${encodeURIComponent(email)}` : '');
+        window.location.href = backUrl;
+    } else {
+        window.location.href = "/selection";
+    }
+}
+</script>
+</body>
+</html>

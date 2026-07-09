@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMARTARM - Login</title>
+    <style>
+        /* --- Nội dung từ file style3.css --- */
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            /* Lưu ý: Đảm bảo file ảnh này nằm cùng thư mục hoặc trong thư mục static */
+            background: url('static/mainbackground4.png') no-repeat center center;
+            background-size: cover;
+        }
+
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 320px; 
+            margin-top: 180px; 
+            padding: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 12px;
+            border: 3px solid #7df9ff; 
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 50px; 
+            border: 3px solid #7df9ff;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-finish {
+            background: #2a6f97; 
+            color: white;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-image"></div> 
+
+    <div class="login-container">
+        <div class="login-box">
+            <form id="login-form">
+                <input type="text" id="ID_3" placeholder="Căn cước công dân" required>
+                <input type="tel" id="Phone" placeholder="Số điện thoại" required>
+                <input type="text" id="dob" placeholder="Ngày sinh" required>
+                <input type="text" id="place" placeholder="Nơi sinh" required>
+                
+                <button type="button" class="btn-finish">Hoàn thành</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        /* --- Nội dung từ file main3.js --- */
+        document.addEventListener('DOMContentLoaded', () => {
+            const finishBtn = document.querySelector('.btn-finish');
+
+            if (finishBtn) {
+                finishBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Lấy dữ liệu theo đúng ID trong HTML
+                    const ID_3 = document.getElementById('ID_3').value;
+                    const phone = document.getElementById('Phone').value;
+                    const dob = document.getElementById('dob').value;
+                    const place = document.getElementById('place').value;
+
+                    // Kiểm tra rỗng
+                    if (!ID_3 || !phone || !dob || !place) {
+                        alert("Vui lòng điền đầy đủ thông tin!");
+                        return;
+                    }
+
+                    // Chuyển hướng
+                    window.location.href = "/"; 
+                });
+            }
+        });
+    </script>
+</body>
+</html>

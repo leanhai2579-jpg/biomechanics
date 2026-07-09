@@ -1,0 +1,115 @@
+{
+  "nguyetanhyuri@gmail.com": {
+    "password": "250106",
+    "username": "Nguyet Anh",
+    "role": "Doctor"
+  },
+  "nguyenvana@gmail.com": {
+    "password": "123456",
+    "username": "Nguyen Van A",
+    "role": "Patient",
+    "exercises": [
+      {
+        "type": "shoulder",
+        "sets": 3,
+        "reps": 10,
+        "restTime": 30,
+        "targetAngle": 90,
+        "description": "Vai - 3x10 reps (góc 90°)"
+      },
+      {
+        "type": "elbow",
+        "sets": 3,
+        "reps": 10,
+        "restTime": 30,
+        "targetAngle": 140,
+        "description": "Khuỷu tay - 3x10 reps (góc 140°)"
+      },
+      {
+        "type": "hand",
+        "sets": 3,
+        "reps": 10,
+        "restTime": 30,
+        "targetAngle": null,
+        "description": "Bàn tay - 3x10 reps"
+      }
+    ],
+    "completed_exercises": [
+      "1",
+      "3",
+      "2",
+      "7",
+      "5",
+      "6"
+    ]
+  },
+  "tranthib@gmail.com": {
+    "password": "123456",
+    "username": "Tran Thi B",
+    "role": "Patient",
+    "exercises": [
+      {
+        "type": "shoulder",
+        "sets": 3,
+        "reps": 10,
+        "restTime": 30,
+        "targetAngle": 90,
+        "description": "Vai - 3x10 reps (góc 90°)"
+      },
+      {
+        "type": "elbow",
+        "sets": 3,
+        "reps": 10,
+        "restTime": 30,
+        "targetAngle": 140,
+        "description": "Khuỷu tay - 3x10 reps (góc 140°)"
+      },
+      {
+        "type": "hand",
+        "sets": 3,
+        "reps": 10,
+        "restTime": 30,
+        "targetAngle": null,
+        "description": "Bàn tay - 3x10 reps"
+      }
+    ]
+  },
+  "ngocmai300706@gmail.com": {
+    "password": "@Ngomai307306",
+    "username": "@Ngomai307306",
+    "role": "Doctor"
+  },
+  "levanc@gmail.com": {
+    "password": "123456",
+    "username": "Le Van C",
+    "role": "Patient",
+    "exercises": [
+      {
+        "type": "hand",
+        "sets": 3,
+        "reps": 10,
+        "restTime": 30,
+        "targetAngle": null,
+        "description": "Bàn tay - 3x10 reps"
+      },
+      {
+        "type": "shoulder",
+        "sets": 3,
+        "reps": 10,
+        "restTime": 30,
+        "targetAngle": 90,
+        "description": "Vai - 3x10 reps (góc 90°)"
+      }
+    ]
+  },
+  "phamthid@gmail.com": {
+    "password": "123456",
+    "username": "Pham Thi D",
+    "role": "Patient"
+  },
+  "le.anhai2579@gmail.com": {
+    "username": "Ha",
+    "password": "250106",
+    "role": "Doctor"
+  }
+}

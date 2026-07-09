@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMARTARM - Login</title>
+    <style>
+        * {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.bg-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    /* Đảm bảo ảnh nền không bị méo */
+    background: url('static/mainbackground1.png') no-repeat center center;
+    background-size: cover;
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-box {
+    width: 100%;
+    /* Thu nhỏ max-width lại để các ô trông thanh mảnh giống Canva */
+    max-width: 320px; 
+    /* Dịch chuyển form xuống dưới để không đè lên chữ có sẵn trong ảnh */
+    margin-top: 180px; 
+    padding: 10px;
+}
+
+
+/* Custom Radio Buttons (Hình tròn chọn bệnh nhân/bác sĩ) */
+.role-selection {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.radio-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    padding-left: 30px;
+}
+
+.radio-container input {
+    position: absolute;
+    opacity: 0;
+}
+
+.checkmark {
+    position: absolute;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: transparent;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.radio-container input:checked ~ .checkmark {
+    background-color: #4ed9d9; /* Màu xanh như trong hình */
+    border-color: #4ed9d9;
+}
+
+input {
+    width: 100%;
+    padding: 10px 15px;
+    margin-bottom: 12px;
+    /* Viền mỏng lại một chút nhưng vẫn màu neon */
+    border: 3px solid #7df9ff; 
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.options {
+    display: flex;
+    align-items: center; /* Thẳng hàng tuyệt đối */
+    justify-content: flex-start;
+    gap: 8px;
+    color: white;
+    margin: 10px 0 20px 5px; /* Căn chỉnh lề trái cho bằng ô input */
+    font-size: 0.85rem;
+}
+
+.options input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #7df9ff;
+
+}
+.options label {
+    cursor: pointer;
+    user-select: none;      /* Ngăn người dùng bôi đen chữ khi bấm nhầm */
+    line-height: 1;         /* Đảm bảo chữ không bị cao hơn ô vuông */
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    /* Bo tròn "viên thuốc" cực mạnh */
+    border-radius: 50px; 
+    border: 3px solid #7df9ff;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-login {
+    background: #2a6f97; /* Màu xanh biển đậm */
+    color: white;
+}
+
+.btn-create {
+    background: white;
+    color: #2a6f97;
+}
+
+button:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+button:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+}
+.bg-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-image: url('static/mainbackground1.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+    </style>
+
+</head>
+<body>
+    <div class="bg-image"></div> 
+
+    <div class="login-container">
+        
+        <div class="login-box">
+            <div class="login-header">
+        
+                <div class="role-selection">
+                    <label class="radio-container">
+                        <input type="radio" name="role" value="Patient" checked>
+                        <span class="checkmark"></span>
+                        Bệnh nhân
+                    </label>
+                    <label class="radio-container">
+                        <input type="radio" name="role" value="Doctor">
+                        <span class="checkmark"></span>
+                        Bác sĩ
+                    </label>
+                </div>
+
+            
+            <form id="login-form">
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Mật khẩu" required>
+                
+                <div class="options">
+                    <input type="checkbox" id="save">
+                    <label for="save">Lưu đăng nhập</label>
+                </div>
+                
+                <button type="submit" class="btn-login">Đăng nhập</button>
+                <button type="button" class="btn-create">Đăng kí</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    // LẤY ROLE (bệnh nhân hay bác sĩ)
+    const role = document.querySelector('input[name="role"]:checked').value;
+
+    // CHỌN API theo role
+    const url = role === "Doctor" ? "/login-doctor" : "/login";
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+    });
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+        localStorage.setItem('patient_email', email);
+        // nếu là bác sĩ → vào index_ee
+        if (role === "Doctor") {
+            window.location.href = "/doctor-page";
+        } else {
+            window.location.href = "/selection";
+        }
+    } else {
+        alert(result.message || "Đăng nhập thất bại");
+    }
+});
+
+// Chuyển sang trang tạo tài khoản khi bấm nút Create Account
+document.querySelector('.btn-create').addEventListener('click', () => {
+    window.location.href = "/register-page"; 
+});
+
+// Chuyển sang giao diện tạo tài khoản
+document.querySelector('.btn-create').addEventListener('click', () => {
+    window.location.href = "/register-page"; 
+});
+
+
+    </script>
+</body>
+</html>

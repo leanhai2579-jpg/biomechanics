@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMARTARM - Login</title>
+    
+    <style>
+        * {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.bg-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    /* Đảm bảo ảnh nền không bị méo */
+    background: url('static/mainbackground2.png') no-repeat center center;
+    background-size: cover;
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-box {
+    width: 100%;
+    /* Thu nhỏ max-width lại để các ô trông thanh mảnh giống Canva */
+    max-width: 320px; 
+    /* Dịch chuyển form xuống dưới để không đè lên chữ có sẵn trong ảnh */
+    margin-top: 180px; 
+    padding: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 10px 15px;
+    margin-bottom: 12px;
+    /* Viền mỏng lại một chút nhưng vẫn màu neon */
+    border: 3px solid #7df9ff; 
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.options {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+}
+.options input[type="checkbox"] {
+    width: 18px;            /* Chỉnh to ra xíu cho dễ bấm giống Canva */
+    height: 18px;
+    margin: 0;              /* Xóa sạch margin mặc định của trình duyệt */
+    cursor: pointer;
+    accent-color: #7df9ff;
+}
+.options label {
+    cursor: pointer;
+    user-select: none;      /* Ngăn người dùng bôi đen chữ khi bấm nhầm */
+    line-height: 1;         /* Đảm bảo chữ không bị cao hơn ô vuông */
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    /* Bo tròn "viên thuốc" cực mạnh */
+    border-radius: 50px; 
+    border: 3px solid #7df9ff;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-login {
+    background: #2a6f97; /* Màu xanh biển đậm */
+    color: white;
+}
+
+.btn-create {
+    background: white;
+    color: #2a6f97;
+}
+
+button:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+button:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+}
+
+        
+        .login-footer {
+            margin-top: 15px;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .link-login {
+            color: #7df9ff;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .link-login:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-image"></div> 
+
+    <div class="login-container">
+        
+        <div class="login-box">
+            
+            <form id="login-form">
+                <input type="name" id="name" placeholder="Họ và tên" required>
+                <input type="email" id="email" placeholder="Email công tác" required>
+                <input type="tel" id="Phone" placeholder="Số điện thoại liên hệ" required>
+                <input type="ID" id="ID" placeholder="Mã số hành nghề/ID" required>
+                <input type="password" id="password" placeholder="Mật khẩu" required>
+                
+                <button type="button" class="btn-create">Tạo tài khoản</button>
+                <div class="login-footer">
+                    <span>Bạn đã có tài khoản?</span>
+                    <a href="index.html" class="link-login">Đăng nhập</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        /* Nội dung từ file main2.js */
+        document.querySelector('.btn-create').addEventListener('click', async (e) => {
+            e.preventDefault(); // Chặn reload trang
+
+            const email = document.getElementById('email').value;
+            const username = document.getElementById('ID').value; // Dùng ID này làm username
+            const password = document.getElementById('password').value;
+
+            // Kiểm tra xem đã nhập đủ chưa
+            if (!email || !password || !username) {
+                return alert("Vui lòng điền đủ thông tin!");
+            }
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: email, 
+                        username: username, // Gửi đúng tên biến lên Flask
+                        password: password, 
+                        role: "Doctor"
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    alert(result.message);
+                    window.location.href = "/info-page"; // Chuyển sang index3
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error("Lỗi kết nối:", error);
+            }
+        });
+    </script>
+</body>
+</html>
